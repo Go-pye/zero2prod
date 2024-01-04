@@ -21,15 +21,17 @@ DB_NAME="${POSTGRES_DB:=newsletter}"
 DB_PORT="${POSTGRES_PORT:=5433}"
 DB_HOST="${POSTGRES_HOST:=localhost}"
 
-# Launch postgres using Docker
-docker run \
-  -e POSTGRES_USER=${DB_USER} \
-  -e POSTGRES_PASSWORD=${DB_PASSWORD} \
-  -e POSTGRES_DB=${DB_NAME} \
-  -p "${DB_PORT}":5432 \
-  -d postgres \
-  postgres -N 1000
-  # ^ increase number of connections for testing purposes
+# Allow to skip Docker if a dockerized POstgres database is already running
+if [[ -z "${SKIP_DOCKER}" ]]
+then
+  docker run \
+    -e POSTGRES_USER=${DB_USER} \
+    -e POSTGRES_PASSWORD=${DB_PASSWORD} \
+    -e POSTGRES_DB=${DB_NAME} \
+    -p "${DB_PORT}":5432 \
+    -d postgres \
+    postgres -N 1000
+fi
 
 export PGPASSWORD="${DB_PASSWORD}"
 until psql -h "${DB_HOST}" -U "${DB_USER}" -p "${DB_PORT}" -d "${DB_NAME}" -c '\q'; do
@@ -37,8 +39,12 @@ until psql -h "${DB_HOST}" -U "${DB_USER}" -p "${DB_PORT}" -d "${DB_NAME}" -c '\
   sleep 1
 done
 
+echo >&2 "Postgres is up and running on port ${DB_PORT} - running migrations now!"
+
 DATABASE_URL=postgres://${DB_USER}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/${DB_NAME}
 export DATABASE_URL
-sqlx database create
 
-sqlx migrate add create_subscriptions_table
+sqlx database create
+sqlx migrate run --database-url="${DATABASE_URL}"
+
+echo >&2 "Postgres has been migrated, ready to go!"
