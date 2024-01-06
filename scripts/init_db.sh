@@ -18,7 +18,7 @@ fi
 DB_USER="${POSTGRES_USER:=postgres}"
 DB_PASSWORD="${POSTGRES_PASSWORD:=password}"
 DB_NAME="${POSTGRES_DB:=newsletter}"
-DB_PORT="${POSTGRES_PORT:=5433}"
+DB_PORT="${POSTGRES_PORT:=5432}"
 DB_HOST="${POSTGRES_HOST:=localhost}"
 
 # Allow to skip Docker if a dockerized POstgres database is already running
