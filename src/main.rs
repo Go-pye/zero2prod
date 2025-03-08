@@ -1,9 +1,9 @@
+use secrecy::ExposeSecret;
+use sqlx::PgPool;
+use std::net::TcpListener;
 use zero2prod::configuration::get_configuration;
 use zero2prod::startup::run;
 use zero2prod::telemetry::{get_subscriber, init_subscriber};
-use sqlx::PgPool;
-use std::net::TcpListener;
-use secrecy::ExposeSecret;
 
 #[tokio::main]
 async fn main() -> Result<(), std::io::Error> {
@@ -11,8 +11,9 @@ async fn main() -> Result<(), std::io::Error> {
     init_subscriber(subscriber);
 
     let configuration = get_configuration().expect("Failed to read configuration.");
-    let connection_pool = PgPool::connect_lazy(&configuration.database.connection_string().expose_secret())
-        .expect("failed to connect to Postgres.");
+    let connection_pool =
+        PgPool::connect_lazy(&configuration.database.connection_string().expose_secret())
+            .expect("failed to connect to Postgres.");
 
     let address = format!(
         "{}:{}",
