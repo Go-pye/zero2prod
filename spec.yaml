@@ -16,6 +16,23 @@ services:
     instance_size_slug: basic-xxs
     routes:
       - path: /
+    envs:
+      - key: APP_DATABASE__USERNAME
+        scope: RUN_TIME
+        value: ${zero2prod-db.username}
+      - key: APP_DATABASE__PASSWORD
+        scope: RUN_TIME
+        value: ${zero2prod-db.password}
+      - key: APP_DATABASE__HOST
+        scope: RUN_TIME
+        value: ${zero2prod-db.host}
+      - key: APP_DATABASE__PORT
+        scope: RUN_TIME
+        value: ${zero2prod-db.port}
+      - key: APP_DATABASE__DATABASE_NAME
+        scope: RUN_TIME
+        value: ${zero2prod-db.database_name}
+        
 databases:
   - engine: PG
     name: zero2prod-db
