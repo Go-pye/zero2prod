@@ -1,14 +1,18 @@
-use secrecy::{ExposeSecret, SecretBox};
+// use secrecy::ExposeSecret;
+use serde_aux::field_attributes::deserialize_number_from_string;
+use sqlx::ConnectOptions;
+use sqlx::postgres::{PgConnectOptions, PgSslMode};
+use secrecy::{ExposeSecret, Secret};
 
 #[derive(serde::Deserialize)]
 pub struct Settings {
-    pub database: DatabaseSettings,
-    // pub application_port: u16,
     pub application: ApplicationSettings,
+    pub database: DatabaseSettings,
 }
 
 #[derive(serde::Deserialize)]
 pub struct ApplicationSettings {
+    #[serde(deserialize_with = "deserialize_number_from_string")]
     pub port: u16,
     pub host: String,
 }
@@ -16,34 +20,33 @@ pub struct ApplicationSettings {
 #[derive(serde::Deserialize)]
 pub struct DatabaseSettings {
     pub username: String,
-    pub password: SecretBox<String>,
+    pub password: Secret<String>,
+    #[serde(deserialize_with = "deserialize_number_from_string")]
     pub port: u16,
     pub host: String,
     pub database_name: String,
+    pub require_ssl: bool
 }
 
 impl DatabaseSettings {
-    pub fn connection_string(&self) -> SecretBox<String> {
-        let connection_string = format!(
-            "postgres://{}:{}@{}:{}/{}",
-            self.username,
-            self.password.expose_secret(),
-            self.host,
-            self.port,
-            self.database_name
-        );
-        SecretBox::new(Box::new(connection_string))
+    pub fn without_db(&self) -> PgConnectOptions {
+        let ssl_mode = if self.require_ssl {
+            PgSslMode::Require
+        } else {
+            PgSslMode::Prefer
+        };
+        PgConnectOptions::new()
+            .host(&self.host)
+            .username(&self.username)
+            .password(&self.password.expose_secret())
+            .port(self.port)
+            .ssl_mode(ssl_mode)
     }
 
-    pub fn connection_string_without_db(&self) -> SecretBox<String> {
-        let connection_string = format!(
-            "postgres://{}:{}@{}:{}",
-            self.username,
-            self.password.expose_secret(),
-            self.host,
-            self.port
-        );
-        SecretBox::new(Box::new(connection_string))
+    pub fn with_db(&self) -> PgConnectOptions {
+        self.without_db()
+            .database(&self.database_name)
+            .log_statements(tracing::log::LevelFilter::Trace)
     }
 }
 
@@ -64,6 +67,11 @@ pub fn get_configuration() -> Result<Settings, config::ConfigError> {
         .add_source(config::File::from(
             configuration_directory.join(environment_filename),
         ))
+        .add_source(
+            config::Environment::with_prefix("APP")
+                .prefix_separator("_")
+                .separator("__"),
+        )
         .build()?;
 
     settings.try_deserialize::<Settings>()
