@@ -19,23 +19,23 @@ services:
     envs:
       - key: APP_DATABASE__USERNAME
         scope: RUN_TIME
-        value: ${zero2prod-db.username}
+        value: ${newsletter.username}
       - key: APP_DATABASE__PASSWORD
         scope: RUN_TIME
-        value: ${zero2prod-db.password}
+        value: ${newsletter.password}
       - key: APP_DATABASE__HOST
         scope: RUN_TIME
-        value: ${zero2prod-db.host}
+        value: ${newsletter.host}
       - key: APP_DATABASE__PORT
         scope: RUN_TIME
-        value: ${zero2prod-db.port}
+        value: ${newsletter.port}
       - key: APP_DATABASE__DATABASE_NAME
         scope: RUN_TIME
-        value: ${zero2prod-db.database_name}
+        value: ${newsletter.database_name}
         
 databases:
   - engine: PG
-    name: zero2prod-db
+    name: newsletter
     num_nodes: 1
     size: db-s-dev-database
     version: "14"
