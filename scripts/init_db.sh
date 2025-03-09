@@ -88,4 +88,20 @@ done
 echo "Running migrations..."
 sqlx migrate run
 
+# Also create the subscriptions table in the default postgres database as a fallback
+echo "Creating subscriptions table in default postgres database as fallback..."
+PGPASSWORD="${DB_PASSWORD}" psql -h "${DB_HOST}" -p "${DB_PORT}" -U "${DB_USER}" -d "postgres" -c "
+CREATE TABLE IF NOT EXISTS subscriptions(
+    id uuid NOT NULL PRIMARY KEY,
+    email TEXT NOT NULL UNIQUE,
+    name TEXT NOT NULL,
+    subscribed_at timestamptz NOT NULL
+);"
+
+# Export the database name as an environment variable for the application
+echo "Setting APP_DATABASE__DATABASE_NAME=${DB_NAME}"
+export APP_DATABASE__DATABASE_NAME="${DB_NAME}"
+echo "APP_DATABASE__DATABASE_NAME=${DB_NAME}" >> ~/.bashrc
+echo "APP_DATABASE__DATABASE_NAME=${DB_NAME}" >> ~/.profile
+
 echo "Migrations complete!"
