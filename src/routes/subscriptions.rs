@@ -1,9 +1,9 @@
+use crate::domain::{NewSubscriber, SubscriberEmail, SubscriberName};
 use actix_web::{web, HttpResponse};
-use crate::domain::{NewSubscriber, SubscriberName, SubscriberEmail};
 use chrono::Utc;
 use sqlx::PgPool;
-use uuid::Uuid;
 use unicode_segmentation::UnicodeSegmentation;
+use uuid::Uuid;
 
 #[derive(serde::Deserialize)]
 pub struct FormData {
@@ -23,7 +23,7 @@ impl TryFrom<FormData> for NewSubscriber {
     fn try_from(value: FormData) -> Result<Self, Self::Error> {
         let name = SubscriberName::parse(value.name)?;
         let email = SubscriberEmail::parse(value.email)?;
-        Ok(Self { email, name})
+        Ok(Self { email, name })
     }
 }
 
@@ -36,7 +36,7 @@ impl TryFrom<FormData> for NewSubscriber {
     )
 )]
 pub async fn subscribe(form: web::Form<FormData>, pool: web::Data<PgPool>) -> HttpResponse {
-    let new_subscriber = match form.0.try_into() { 
+    let new_subscriber = match form.0.try_into() {
         Ok(form) => form,
         Err(_) => return HttpResponse::BadRequest().finish(),
     };
@@ -50,7 +50,10 @@ pub async fn subscribe(form: web::Form<FormData>, pool: web::Data<PgPool>) -> Ht
     name = "Saving new subscriber details in the database.",
     skip(new_subscriber, pool)
 )]
-pub async fn insert_subscriber(pool: &PgPool, new_subscriber: &NewSubscriber) -> Result<(), sqlx::Error> {
+pub async fn insert_subscriber(
+    pool: &PgPool,
+    new_subscriber: &NewSubscriber,
+) -> Result<(), sqlx::Error> {
     sqlx::query!(
         r#"
         INSERT INTO subscriptions (id, email, name, subscribed_at)
