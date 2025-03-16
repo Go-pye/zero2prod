@@ -12,16 +12,16 @@ async fn main() -> Result<(), std::io::Error> {
     println!("Loading configuration...");
     let configuration = get_configuration().expect("Failed to read configuration.");
     println!("Configuration loaded successfully");
-    
-    println!("Connecting to database at {}:{}", 
-             configuration.database.host, configuration.database.port);
-    
-    // Create the connection pool with a longer timeout for initial connection
+
+    println!(
+        "Connecting to database at {}:{}",
+        configuration.database.host, configuration.database.port
+    );
+
     let connection_pool = PgPoolOptions::new()
         .acquire_timeout(std::time::Duration::from_secs(10))
         .connect_lazy_with(configuration.database.without_db());
-    
-    // Test the database connection
+
     println!("Testing database connection...");
     match sqlx::query("SELECT 1").execute(&connection_pool).await {
         Ok(_) => println!("Database connection successful!"),
@@ -36,9 +36,9 @@ async fn main() -> Result<(), std::io::Error> {
             // Continue execution despite the error - the app might recover later
         }
     }
-    
+
     println!("Database connection pool created");
-    
+
     let address = format!(
         "{}:{}",
         configuration.application.host, configuration.application.port
