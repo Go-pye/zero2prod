@@ -16,8 +16,27 @@ async fn main() -> Result<(), std::io::Error> {
     println!("Connecting to database at {}:{}", 
              configuration.database.host, configuration.database.port);
     
-    let connection_pool =
-        PgPoolOptions::new().connect_lazy_with(configuration.database.without_db());
+    // Create the connection pool with a longer timeout for initial connection
+    let connection_pool = PgPoolOptions::new()
+        .acquire_timeout(std::time::Duration::from_secs(10))
+        .connect_lazy_with(configuration.database.without_db());
+    
+    // Test the database connection
+    println!("Testing database connection...");
+    match sqlx::query("SELECT 1").execute(&connection_pool).await {
+        Ok(_) => println!("Database connection successful!"),
+        Err(e) => {
+            eprintln!("Failed to connect to the database: {}", e);
+            eprintln!("Database connection details (without password):");
+            eprintln!("  Host: {}", configuration.database.host);
+            eprintln!("  Port: {}", configuration.database.port);
+            eprintln!("  User: {}", configuration.database.username);
+            eprintln!("  Database: {}", configuration.database.database_name);
+            eprintln!("  SSL Required: {}", configuration.database.require_ssl);
+            // Continue execution despite the error - the app might recover later
+        }
+    }
+    
     println!("Database connection pool created");
     
     let address = format!(

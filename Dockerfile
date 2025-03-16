@@ -17,7 +17,7 @@ RUN cargo build --release
 FROM debian:bookworm-slim AS runtime
 WORKDIR /app
 RUN apt-get update -y \
-    && apt-get install -y --no-install-recommends ca-certificates \
+    && apt-get install -y --no-install-recommends ca-certificates postgresql-client \
     && apt-get autoremove -y \
     && apt-get clean -y \
     && rm -rf /var/lib/apt/lists/*
@@ -29,8 +29,6 @@ ENV APP_ENVIRONMENT=production
 ENV APP_DATABASE__HOST=127.0.0.1
 ENV APP_DATABASE__PORT=5432
 ENV APP_DATABASE__USERNAME=postgres
-# Using a placeholder for password - should be provided by Digital Ocean
-ENV APP_DATABASE__PASSWORD=placeholder_password
 ENV APP_DATABASE__DATABASE_NAME=newsletter
 # Add debugging to see environment variables at startup
-ENTRYPOINT ["sh", "-c", "env | grep -i app_ && ./zero2prod"]
+ENTRYPOINT ["sh", "-c", "echo 'Testing database connection...' && PGPASSWORD=$APP_DATABASE__PASSWORD psql -h $APP_DATABASE__HOST -p $APP_DATABASE__PORT -U $APP_DATABASE__USERNAME -d $APP_DATABASE__DATABASE_NAME -c 'SELECT 1' || echo 'Database connection test failed' && env | grep -i app_ && ./zero2prod"]
