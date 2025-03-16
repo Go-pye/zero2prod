@@ -116,7 +116,7 @@ async fn subscribe_returns_a_200_for_valid_form_data() {
 }
 
 #[tokio::test]
-async fn subscribe_returns_a_400_when_data_is_missing() {
+async fn  subscribe_returns_a_400_when_data_is_missing() {
     // Arrange
     let app = spawn_app().await;
     let client = reqwest::Client::new();
@@ -148,7 +148,7 @@ async fn subscribe_returns_a_400_when_data_is_missing() {
 }
 
 #[tokio::test]
-async fn subscribe_returns_a_200_when_fields_present_but_empty() {
+async fn subscribe_returns_a_400_when_fields_present_but_invalid() {
     // Arrange
     let app = spawn_app().await;
     let client = reqwest::Client::new();
@@ -170,10 +170,16 @@ async fn subscribe_returns_a_200_when_fields_present_but_empty() {
 
         // Assert
         assert_eq!(
-            200,
+            400,
             response.status().as_u16(),
             "The API did not return a 200 OK when the payload was {}",
             description
         );
     }
+}
+
+#[tokio::test]
+async fn dummy_fail(){
+    let result: Result<&str, &str> = Err("error");
+    claims::assert_ok!(result);
 }

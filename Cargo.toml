@@ -26,7 +26,9 @@ serde = { version = "1", features = ["derive"] }
 serde-aux = "3"
 tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
 uuid = { version = "1", features = ["v4"] }
+unicode-segmentation = "1.10"
 sqlx = { version = "0.8.3", default-features = false, features = ["runtime-tokio-rustls", "macros", "postgres", "uuid", "chrono", "migrate"] }
 
 [dev-dependencies]
+claims = "0.7"
 reqwest = "0.11"
