@@ -177,9 +177,3 @@ async fn subscribe_returns_a_400_when_fields_present_but_invalid() {
         );
     }
 }
-
-#[tokio::test]
-async fn dummy_fail(){
-    let result: Result<&str, &str> = Err("error");
-    claims::assert_ok!(result);
-}
