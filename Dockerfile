@@ -24,4 +24,13 @@ RUN apt-get update -y \
 COPY --from=builder /app/target/release/zero2prod zero2prod
 COPY configuration configuration
 ENV APP_ENVIRONMENT=production
-ENTRYPOINT ["./zero2prod"]
+# Add explicit environment variables for database connection
+# These will be overridden by Digital Ocean's environment variables if set
+ENV APP_DATABASE__HOST=127.0.0.1
+ENV APP_DATABASE__PORT=5432
+ENV APP_DATABASE__USERNAME=postgres
+# Using a placeholder for password - should be provided by Digital Ocean
+ENV APP_DATABASE__PASSWORD=placeholder_password
+ENV APP_DATABASE__DATABASE_NAME=newsletter
+# Add debugging to see environment variables at startup
+ENTRYPOINT ["sh", "-c", "env | grep -i app_ && ./zero2prod"]
