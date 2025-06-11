@@ -3,6 +3,7 @@ use std::net::TcpListener;
 use zero2prod::configuration::get_configuration;
 use zero2prod::startup::run;
 use zero2prod::telemetry::{get_subscriber, init_subscriber};
+use zero2prod::email_client::EmailClient;
 
 #[tokio::main]
 async fn main() -> Result<(), std::io::Error> {
@@ -36,8 +37,11 @@ async fn main() -> Result<(), std::io::Error> {
             // Continue execution despite the error - the app might recover later
         }
     }
-
     println!("Database connection pool created");
+
+    let sender_email = configuration.email_client.sender()
+        .expect("Invalid sender email.");
+    let email_client = EmailClient::new(configuration.email_client.base_url, sender_email, configuration.email_client.authorization_token);
 
     let address = format!(
         "{}:{}",
@@ -46,5 +50,5 @@ async fn main() -> Result<(), std::io::Error> {
     println!("Starting server on {}", address);
     let listener = TcpListener::bind(address)?;
 
-    run(listener, connection_pool)?.await
+    run(listener, connection_pool, email_client)?.await
 }
