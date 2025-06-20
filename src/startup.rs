@@ -64,8 +64,6 @@ impl Application {
 }
 
 pub async fn build(configuration: Settings) -> Result<Server, std::io::Error> {
-    // let connection_pool = PgPoolOptions::new()
-    //     .connect_lazy_with(configuration.database.without_db());
     let connection_pool = get_connection_pool(&configuration.database);
 
     let sender_email = configuration.email_client.sender().expect("Invalid sender email.");

@@ -1,5 +1,6 @@
 use crate::helpers::spawn_app;
 
+#[tokio::test]
 async fn subscribe_returns_a_200_for_valid_form_data() {
     // Arrange
     let app = spawn_app().await;
