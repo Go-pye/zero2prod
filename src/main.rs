@@ -10,19 +10,13 @@ async fn main() -> Result<(), std::io::Error> {
     let subscriber = get_subscriber("zero2prod".into(), "info".into(), std::io::stdout);
     init_subscriber(subscriber);
 
-    println!("Loading configuration...");
     let configuration = get_configuration().expect("Failed to read configuration.");
-    println!("Configuration loaded successfully");
-
-    println!(
-        "Connecting to database at {}:{}",
-        configuration.database.host, configuration.database.port
-    );
 
     let connection_pool = PgPoolOptions::new()
         .acquire_timeout(std::time::Duration::from_secs(10))
         .connect_lazy_with(configuration.database.without_db());
 
+    // added by to fix database pool issue
     println!("Testing database connection...");
     match sqlx::query("SELECT 1").execute(&connection_pool).await {
         Ok(_) => println!("Database connection successful!"),
