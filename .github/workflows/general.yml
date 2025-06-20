@@ -4,7 +4,7 @@ on: [push, pull_request]
 
 env:
   CARGO_TERM_COLOR: always
-  SQLX_VERSION: "0.7.3"
+  SQLX_VERSION: "0.8.3"
   SQLX_FEATURES: "rustls,postgres"
   APP_USER: app
   APP_USER_PWD: secret
@@ -25,7 +25,7 @@ jobs:
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: password
           POSTGRES_DB: postgres
-        # When you map ports using the ports keyword, GitHub uses the --publish command to publish the container’s ports to the Docker host
+        # When you map ports using the ports keyword, GitHub uses the --publish command to publish the container's ports to the Docker host
         # Opens tcp port 5432 on the host and service container
         ports:
           - 5432:5432
